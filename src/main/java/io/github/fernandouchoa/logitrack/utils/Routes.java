@@ -1,8 +1,10 @@
-﻿package io.github.fernandouchoa.logitrack.utils;
+package io.github.fernandouchoa.logitrack.utils;
 
-/**
- * Componente da arquitetura de automação do LogiTrack Pro.
- */
 public final class Routes {
 
+    public static final String LOGIN = "/login";
+    public static final String REGISTER = "/register";
+
+    private Routes() {
+    }
 }

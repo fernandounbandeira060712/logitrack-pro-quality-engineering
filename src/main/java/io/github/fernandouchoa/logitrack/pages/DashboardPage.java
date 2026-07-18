@@ -1,8 +1,15 @@
-﻿package io.github.fernandouchoa.logitrack.pages;
+package io.github.fernandouchoa.logitrack.pages;
 
-/**
- * Componente da arquitetura de automação do LogiTrack Pro.
- */
-public final class DashboardPage {
+import com.microsoft.playwright.Page;
+import io.github.fernandouchoa.logitrack.utils.Routes;
 
+public final class DashboardPage extends BasePage {
+
+    public DashboardPage(Page page) {
+        super(page);
+    }
+
+    public boolean isLoaded() {
+        return !page.url().contains(Routes.LOGIN);
+    }
 }

@@ -1,0 +1,14 @@
+﻿target/
+.idea/
+.settings/
+.project
+.classpath
+.vscode/
+.env
+*.log
+allure-results/
+allure-report/
+test-results/
+playwright/
+screenshots/
+videos/

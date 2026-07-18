@@ -3,7 +3,6 @@ package io.github.fernandouchoa.logitrack.pages;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
-import com.microsoft.playwright.options.LoadState;
 import io.github.fernandouchoa.logitrack.utils.Routes;
 
 public final class LoginPage extends BasePage {
@@ -46,14 +45,15 @@ public final class LoginPage extends BasePage {
         fillEmail(email);
         fillPassword(password);
         click(loginButton);
-        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+
+        page.waitForTimeout(4000);
 
         return new DashboardPage(page);
     }
 
     public LoginPage submit() {
         click(loginButton);
-        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+        page.waitForTimeout(2000);
         return this;
     }
 

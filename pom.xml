@@ -1,53 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="
+             http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.fernandouchoa</groupId>
     <artifactId>logitrack-pro-quality-engineering</artifactId>
     <version>1.0.0-SNAPSHOT</version>
+
     <name>LogiTrack Pro Quality Engineering</name>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
         <playwright.version>1.59.0</playwright.version>
-        <junit.version>5.14.4</junit.version>
-        <allure.version>2.35.1</allure.version>
+        <junit.version>5.14.3</junit.version>
+        <allure.version>2.35.3</allure.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- Mantém todos os módulos do JUnit alinhados -->
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Mantém todos os módulos do Allure alinhados -->
+            <dependency>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-bom</artifactId>
+                <version>${allure.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
+
+        <!-- Playwright -->
         <dependency>
             <groupId>com.microsoft.playwright</groupId>
             <artifactId>playwright</artifactId>
             <version>${playwright.version}</version>
         </dependency>
 
+        <!-- JUnit Jupiter -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
 
+        <!-- Launcher explicitamente alinhado pelo JUnit BOM -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Integração atual do Allure com JUnit Jupiter -->
         <dependency>
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-jupiter</artifactId>
-            <version>${allure.version}</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
+
                 <configuration>
-                    <release>17</release>
+                    <release>${maven.compiler.release}</release>
+                    <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
 
@@ -55,8 +96,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.5</version>
+
                 <configuration>
                     <useModulePath>false</useModulePath>
+
                     <systemPropertyVariables>
                         <allure.results.directory>
                             ${project.build.directory}/allure-results
@@ -70,6 +113,8 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.5.0</version>
             </plugin>
+
         </plugins>
     </build>
+
 </project>

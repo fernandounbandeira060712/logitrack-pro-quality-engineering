@@ -27,13 +27,13 @@ public final class ConfigManager {
 
     public static boolean isHeadless() {
         return Boolean.parseBoolean(
-                read("headless", "LOGITRACK_HEADLESS", "true")
+                read("headless", "LOGITRACK_HEADLESS", "false")
         );
     }
 
     public static double getTimeout() {
         return Double.parseDouble(
-                read("timeout", "LOGITRACK_TIMEOUT", "10000")
+                read("timeout", "LOGITRACK_TIMEOUT", "45000")
         );
     }
 

@@ -1,4 +1,4 @@
-﻿package io.github.fernandouchoa.logitrack.models;
+package io.github.fernandouchoa.logitrack.models;
 
 public record TripData(
         String origin,

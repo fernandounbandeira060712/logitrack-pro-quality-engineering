@@ -2,7 +2,7 @@ package io.github.fernandouchoa.logitrack.pages;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.options.LoadState;
+import com.microsoft.playwright.options.WaitUntilState;
 import io.github.fernandouchoa.logitrack.config.ConfigManager;
 
 public abstract class BasePage {
@@ -14,8 +14,12 @@ public abstract class BasePage {
     }
 
     protected void navigate(String route) {
-        page.navigate(ConfigManager.getBaseUrl() + route);
-        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+        page.navigate(
+                ConfigManager.getBaseUrl() + route,
+                new Page.NavigateOptions()
+                        .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                        .setTimeout(ConfigManager.getTimeout())
+        );
     }
 
     protected void fill(Locator locator, String value) {

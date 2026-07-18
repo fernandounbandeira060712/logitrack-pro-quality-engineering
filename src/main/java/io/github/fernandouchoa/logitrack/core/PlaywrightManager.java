@@ -30,7 +30,7 @@ public final class PlaywrightManager implements AutoCloseable {
             case "webkit" -> playwright.webkit();
             case "chromium" -> playwright.chromium();
             default -> throw new IllegalArgumentException(
-                    "Navegador nÃ£o suportado: "
+                    "Navegador nao suportado: "
                             + ConfigManager.getBrowser()
             );
         };
@@ -47,6 +47,7 @@ public final class PlaywrightManager implements AutoCloseable {
         );
 
         context.setDefaultTimeout(ConfigManager.getTimeout());
+        context.setDefaultNavigationTimeout(ConfigManager.getTimeout());
 
         context.tracing().start(
                 new Tracing.StartOptions()
@@ -61,7 +62,7 @@ public final class PlaywrightManager implements AutoCloseable {
     public Page getPage() {
         if (page == null) {
             throw new IllegalStateException(
-                    "O Playwright ainda nÃ£o foi inicializado."
+                    "O Playwright ainda nao foi inicializado."
             );
         }
 
@@ -79,11 +80,13 @@ public final class PlaywrightManager implements AutoCloseable {
 
         context.tracing().stop(
                 new Tracing.StopOptions()
-                        .setPath(Paths.get(
-                                "target",
-                                "traces",
-                                safeName + ".zip"
-                        ))
+                        .setPath(
+                                Paths.get(
+                                        "target",
+                                        "traces",
+                                        safeName + ".zip"
+                                )
+                        )
         );
     }
 
@@ -107,12 +110,13 @@ public final class PlaywrightManager implements AutoCloseable {
             Files.createDirectories(
                     Paths.get("target", "screenshots")
             );
+
             Files.createDirectories(
                     Paths.get("target", "traces")
             );
         } catch (Exception exception) {
             throw new IllegalStateException(
-                    "NÃ£o foi possÃ­vel criar as pastas de evidÃªncias.",
+                    "Nao foi possivel criar as pastas de evidencias.",
                     exception
             );
         }

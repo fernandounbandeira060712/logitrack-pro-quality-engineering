@@ -1,0 +1,71 @@
+name: Known Defects Reproduction
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: known-defects-reproduction
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce:
+    name: Reproduce documented defects
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    continue-on-error: true
+
+    env:
+      LOGITRACK_EMAIL: ${{ secrets.LOGITRACK_EMAIL }}
+      LOGITRACK_PASSWORD: ${{ secrets.LOGITRACK_PASSWORD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Install Playwright Chromium
+        run: >
+          mvn -B -ntp exec:java
+          -Dexec.mainClass=com.microsoft.playwright.CLI
+          -Dexec.args="install --with-deps chromium"
+
+      - name: Run known defects suite
+        run: >
+          mvn -B -ntp clean test
+          -Dtest=KnownDefectsSuite
+          -DrunKnownDefects=true
+          -Demail="$LOGITRACK_EMAIL"
+          -Dpassword="$LOGITRACK_PASSWORD"
+          -Dheadless=true
+          -Dtimeout=45000
+          -DopenAllure=false
+          -Dtest.retry.count=0
+
+      - name: Generate Allure report
+        if: always()
+        run: mvn -B -ntp allure:report
+
+      - name: Upload known-defects evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: known-defects-evidence-${{ github.run_number }}
+          path: |
+            target/site/allure-maven
+            target/allure-results
+            target/screenshots
+            target/videos
+            target/traces
+            target/logs
+            target/surefire-reports
+          if-no-files-found: warn
+          retention-days: 30

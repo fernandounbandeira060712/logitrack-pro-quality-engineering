@@ -1,30 +1,31 @@
-name: Quality Engineering Pipeline
+name: DEV Quality Gate
 
 on:
   push:
     branches:
-      - main
       - develop
   pull_request:
     branches:
       - main
+      - develop
   workflow_dispatch:
+
+concurrency:
+  group: dev-quality-gate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
-  automated-tests:
-    name: Playwright, JUnit and Allure
+  quality-gate:
+    name: DEV Suite - Playwright, JUnit and Allure
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
 
     env:
       LOGITRACK_EMAIL: ${{ secrets.LOGITRACK_EMAIL }}
       LOGITRACK_PASSWORD: ${{ secrets.LOGITRACK_PASSWORD }}
-      LOGITRACK_HEADLESS: "true"
-      LOGITRACK_BROWSER: chromium
-      LOGITRACK_TIMEOUT: "45000"
 
     steps:
       - name: Checkout repository
@@ -41,7 +42,7 @@ jobs:
         shell: bash
         run: |
           if [ -z "$LOGITRACK_EMAIL" ] || [ -z "$LOGITRACK_PASSWORD" ]; then
-            echo "::error::Configure LOGITRACK_EMAIL and LOGITRACK_PASSWORD in GitHub Actions secrets."
+            echo "::error::Configure LOGITRACK_EMAIL and LOGITRACK_PASSWORD in repository secrets."
             exit 1
           fi
 
@@ -51,27 +52,26 @@ jobs:
           -Dexec.mainClass=com.microsoft.playwright.CLI
           -Dexec.args="install --with-deps chromium"
 
-      - name: Run automated tests once
-        run: mvn -B -ntp clean test
+      - name: Run DEV quality gate suite
+        run: >
+          mvn -B -ntp clean test
+          -Dtest=DevQualityGateSuite
+          -Demail="$LOGITRACK_EMAIL"
+          -Dpassword="$LOGITRACK_PASSWORD"
+          -Dheadless=true
+          -Dtimeout=45000
+          -DopenAllure=false
+          -Dtest.retry.count=1
 
       - name: Generate Allure report
         if: always()
         run: mvn -B -ntp allure:report
 
-      - name: Upload Allure results
+      - name: Upload Allure HTML
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results
-          path: target/allure-results
-          if-no-files-found: warn
-          retention-days: 15
-
-      - name: Upload Allure HTML report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-html-report
+          name: dev-allure-html-${{ github.run_number }}
           path: target/site/allure-maven
           if-no-files-found: warn
           retention-days: 15
@@ -80,8 +80,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-evidence
+          name: dev-playwright-evidence-${{ github.run_number }}
           path: |
+            target/allure-results
             target/screenshots
             target/videos
             target/traces

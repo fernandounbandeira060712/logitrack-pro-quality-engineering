@@ -2,6 +2,7 @@ package io.github.fernandouchoa.logitrack.pages;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import io.github.fernandouchoa.logitrack.components.RadixSelectComponent;
 import io.github.fernandouchoa.logitrack.components.ToastComponent;
 import io.github.fernandouchoa.logitrack.models.TripData;
 import io.github.fernandouchoa.logitrack.utils.Routes;
@@ -9,10 +10,27 @@ import io.github.fernandouchoa.logitrack.utils.Routes;
 public final class TripsPage extends BasePage {
 
     private final ToastComponent toast;
+    private final RadixSelectComponent select;
+
+    private final Locator searchInput;
+    private final Locator newTripButton;
 
     public TripsPage(Page page) {
         super(page);
+
         toast = new ToastComponent(page);
+        select = new RadixSelectComponent(page);
+
+        searchInput = page.locator(
+                "input[placeholder='Buscar por origem ou destino...']"
+        );
+
+        newTripButton = page.locator(
+                "button:visible"
+        ).filter(
+                new Locator.FilterOptions()
+                        .setHasText("Nova Viagem")
+        ).first();
     }
 
     public TripsPage open() {
@@ -21,65 +39,133 @@ public final class TripsPage extends BasePage {
     }
 
     public boolean isLoaded() {
-        return page.url().toLowerCase().contains("trip")
-                || page.getByText("Viagens").count() > 0;
+        return page.url().contains("/viagens");
     }
 
     public TripsPage clickNewTrip() {
-        clickFirstButton("Nova", "Cadastrar", "Adicionar");
+        click(newTripButton);
+        visibleDialog();
         return this;
     }
 
     public TripsPage fillTripForm(TripData trip) {
-        fillFirstVisible(trip.origin(), "Origem");
-        fillFirstVisible(trip.destination(), "Destino");
-        fillFirstVisible(trip.departureDate(), "Data de saÃ­da", "Partida");
-        fillFirstVisible(trip.expectedArrivalDate(), "PrevisÃ£o", "Chegada");
-        fillFirstVisible(trip.vehiclePlate(), "VeÃ­culo", "Placa");
-        fillFirstVisible(trip.driver(), "Motorista");
+        Locator dialog = visibleDialog();
+
+        select.selectByText(
+                dialog.locator(
+                        "button[role='combobox']"
+                ).first(),
+                trip.vehiclePlate()
+        );
+
+        fill(dialog.locator("#origem"), trip.origin());
+        fill(
+                dialog.locator("#destino"),
+                trip.destination()
+        );
+        fill(
+                dialog.locator("#dataSaida"),
+                trip.departureDate()
+        );
+        fill(
+                dialog.locator("#dataChegada"),
+                trip.arrivalDate()
+        );
+        fill(
+                dialog.locator("#kmPercorrida"),
+                trip.distanceKm()
+        );
+
         return this;
     }
 
     public TripsPage save() {
-        clickFirstButton("Salvar", "Cadastrar", "Adicionar");
+        clickDialogButton("Adicionar");
         return this;
     }
 
+    public TripsPage createTrip(TripData trip) {
+        return clickNewTrip()
+                .fillTripForm(trip)
+                .save();
+    }
+
     public TripsPage search(String value) {
-        page.locator(
-                "input[type='search'], input[placeholder*='Buscar'], " +
-                "input[placeholder*='Pesquisar']"
-        ).first().fill(value);
+        fill(searchInput, value);
         return this;
     }
 
     public boolean containsTrip(String value) {
-        return page.getByText(value).count() > 0;
+        return rowByText(value).count() > 0;
+    }
+
+    public TripsPage editByText(String value) {
+        Locator button = rowByText(value).locator(
+                "button:has(svg.lucide-pencil)"
+        ).first();
+
+        click(button);
+        visibleDialog();
+        return this;
+    }
+
+    public TripsPage deleteByText(String value) {
+        Locator button = rowByText(value).locator(
+                "button:has(svg.lucide-trash-2)"
+        ).first();
+
+        click(button);
+        return this;
+    }
+
+    public TripsPage cancel() {
+        clickDialogButton("Cancelar");
+        return this;
     }
 
     public String getFeedbackMessage() {
         return toast.getMessage();
     }
 
-    private void fillFirstVisible(String value, String... labels) {
-        for (String label : labels) {
-            Locator field = page.getByLabel(label);
-            if (field.count() > 0 && field.first().isVisible()) {
-                field.first().fill(value);
-                return;
-            }
-        }
+    private Locator rowByText(String text) {
+        return page.locator("tbody tr")
+                .filter(
+                        new Locator.FilterOptions()
+                                .setHasText(text)
+                )
+                .first();
     }
 
-    private void clickFirstButton(String... texts) {
-        for (String text : texts) {
-            Locator button = page.locator("button")
-                    .filter(new Locator.FilterOptions().setHasText(text));
-            if (button.count() > 0 && button.first().isVisible()) {
-                button.first().click();
-                return;
-            }
+    private Locator visibleDialog() {
+        Locator dialog = page.locator(
+                "[role='dialog']:visible"
+        ).first();
+
+        if (dialog.count() == 0) {
+            throw new IllegalStateException(
+                    "Dialogo de viagem nao encontrado."
+            );
         }
-        throw new IllegalStateException("BotÃ£o esperado nÃ£o encontrado.");
+
+        return dialog;
+    }
+
+    private void clickDialogButton(String text) {
+        Locator button = visibleDialog()
+                .locator("button:visible")
+                .filter(
+                        new Locator.FilterOptions()
+                                .setHasText(text)
+                )
+                .first();
+
+        if (button.count() == 0) {
+            throw new IllegalStateException(
+                    "Botao do dialogo nao encontrado: "
+                            + text
+            );
+        }
+
+        click(button);
     }
 }

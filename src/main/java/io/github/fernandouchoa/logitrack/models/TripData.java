@@ -1,11 +1,11 @@
 package io.github.fernandouchoa.logitrack.models;
 
 public record TripData(
+        String vehiclePlate,
         String origin,
         String destination,
         String departureDate,
-        String expectedArrivalDate,
-        String vehiclePlate,
-        String driver
+        String arrivalDate,
+        String distanceKm
 ) {
 }

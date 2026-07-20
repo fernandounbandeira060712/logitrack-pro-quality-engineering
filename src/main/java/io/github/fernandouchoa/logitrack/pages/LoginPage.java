@@ -2,7 +2,6 @@ package io.github.fernandouchoa.logitrack.pages;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.options.AriaRole;
 import io.github.fernandouchoa.logitrack.utils.Routes;
 
 public final class LoginPage extends BasePage {
@@ -15,15 +14,14 @@ public final class LoginPage extends BasePage {
     public LoginPage(Page page) {
         super(page);
 
-        emailInput = page.locator("input[type='email']").first();
-        passwordInput = page.locator("input[type='password']").first();
-
-        loginButton = page.getByRole(
-                AriaRole.BUTTON,
-                new Page.GetByRoleOptions().setName("Entrar")
+        emailInput = page.locator("#email");
+        passwordInput = page.locator("#password");
+        loginButton = page.locator(
+                "button[type='submit']"
         );
-
-        registerLink = page.getByText("Registre-se agora.");
+        registerLink = page.locator(
+                "a[href='/register']"
+        );
     }
 
     public LoginPage open() {
@@ -41,19 +39,22 @@ public final class LoginPage extends BasePage {
         return this;
     }
 
-    public DashboardPage loginAs(String email, String password) {
+    public DashboardPage loginAs(
+            String email,
+            String password
+    ) {
         fillEmail(email);
         fillPassword(password);
         click(loginButton);
 
-        page.waitForTimeout(4000);
+        page.waitForURL("**/dashboard");
 
         return new DashboardPage(page);
     }
 
     public LoginPage submit() {
         click(loginButton);
-        page.waitForTimeout(2000);
+        page.waitForTimeout(500);
         return this;
     }
 
@@ -69,19 +70,19 @@ public final class LoginPage extends BasePage {
     }
 
     public boolean isAuthenticated() {
-        return !page.url().contains(Routes.LOGIN);
+        return page.url().contains("/dashboard");
     }
 
     public String getEmailValidationMessage() {
-        Object message = emailInput.evaluate(
-                "element => element.validationMessage"
-        );
-
-        return message == null ? "" : message.toString();
+        return validationMessage(emailInput);
     }
 
     public String getPasswordValidationMessage() {
-        Object message = passwordInput.evaluate(
+        return validationMessage(passwordInput);
+    }
+
+    private String validationMessage(Locator field) {
+        Object message = field.evaluate(
                 "element => element.validationMessage"
         );
 

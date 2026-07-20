@@ -3,7 +3,6 @@ package io.github.fernandouchoa.logitrack.components;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import io.github.fernandouchoa.logitrack.pages.DashboardPage;
-import io.github.fernandouchoa.logitrack.pages.IndicatorsPage;
 import io.github.fernandouchoa.logitrack.pages.MaintenancePage;
 import io.github.fernandouchoa.logitrack.pages.TripsPage;
 import io.github.fernandouchoa.logitrack.pages.VehiclesPage;
@@ -19,50 +18,68 @@ public final class SidebarComponent {
     }
 
     public DashboardPage accessDashboard() {
-        clickItem("Dashboard");
+        clickLinkByHref("/dashboard");
         return new DashboardPage(page);
     }
 
     public VehiclesPage accessVehicles() {
-        clickItem("VeÃ­culos");
+        clickLinkByHref("/veiculos");
         return new VehiclesPage(page);
     }
 
-    public TripsPage accessTrips() {
-        clickItem("Viagens");
-        return new TripsPage(page);
-    }
-
     public MaintenancePage accessMaintenance() {
-        clickItem("ManutenÃ§Ãµes");
+        clickLinkContainingHref("manuten");
         return new MaintenancePage(page);
     }
 
-    public IndicatorsPage accessIndicators() {
-        clickItem("Indicadores");
-        return new IndicatorsPage(page);
+    public TripsPage accessTrips() {
+        clickLinkByHref("/viagens");
+        return new TripsPage(page);
     }
 
     public List<String> getVisibleNavigationItems() {
-        return page.locator("aside a:visible, nav a:visible")
-                .allInnerTexts()
+        return page.locator(
+                "aside a:visible, nav a:visible"
+        ).allInnerTexts()
                 .stream()
                 .map(String::trim)
                 .filter(text -> !text.isBlank())
                 .toList();
     }
 
-    private void clickItem(String text) {
-        Locator item = page.locator("aside a, nav a, aside button, nav button")
-                .filter(new Locator.FilterOptions().setHasText(text));
+    private void clickLinkByHref(String href) {
+        Locator link = page.locator(
+                "a[href='" + href + "']"
+        );
 
-        if (item.count() == 0) {
-            item = page.getByText(
-                    text,
-                    new Page.GetByTextOptions().setExact(true)
+        if (link.count() == 0) {
+            link = page.locator(
+                    "a[href$='" + href + "']"
             );
         }
 
-        item.first().click();
+        if (link.count() == 0) {
+            throw new IllegalStateException(
+                    "Link nao encontrado para a rota: " + href
+            );
+        }
+
+        link.first().click();
+        page.waitForTimeout(1200);
+    }
+
+    private void clickLinkContainingHref(String fragment) {
+        Locator link = page.locator(
+                "a[href*='" + fragment + "']"
+        );
+
+        if (link.count() == 0) {
+            throw new IllegalStateException(
+                    "Link nao encontrado contendo: " + fragment
+            );
+        }
+
+        link.first().click();
+        page.waitForTimeout(1200);
     }
 }

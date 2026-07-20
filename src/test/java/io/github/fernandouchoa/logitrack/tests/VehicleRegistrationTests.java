@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import static io.github.fernandouchoa.logitrack.utils.MessageAssertions.assertContainsAll;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -18,7 +19,7 @@ class VehicleRegistrationTests extends BaseTest {
 
     @Test
     @Tag("e2e")
-    @DisplayName("Cadastrar veículo e validar exibição na tabela")
+    @DisplayName("Cadastrar veÃ­culo e validar mensagem e tabela")
     void shouldRegisterVehicleAndDisplayItInTable() {
         Assumptions.assumeTrue(
                 ConfigManager.hasCredentials(),
@@ -40,40 +41,41 @@ class VehicleRegistrationTests extends BaseTest {
 
         assertTrue(
                 vehiclesPage.isLoaded(),
-                "A página de veículos não foi carregada."
+                "A pÃ¡gina de veÃ­culos nÃ£o foi carregada."
         );
 
         vehiclesPage.createVehicle(vehicle);
 
-        page.waitForTimeout(1500);
-
-        assertTrue(
-                page.locator("[role='dialog']:visible").count() == 0,
-                "O formulário permaneceu aberto após tentar criar o veículo."
-        );
+        String successMessage =
+                vehiclesPage.getFeedbackMessage();
 
         vehiclesPage.searchByPlate(vehicle.plate());
-
         page.waitForTimeout(800);
 
         assertAll(
+                () -> assertContainsAll(
+                        successMessage,
+                        "veiculo",
+                        "sucesso"
+                ),
                 () -> assertTrue(
-                        vehiclesPage.containsVehicle(vehicle.plate()),
-                        "O veículo não foi encontrado pela placa: "
+                        vehiclesPage.containsVehicle(
+                                vehicle.plate()
+                        ),
+                        "O veÃ­culo nÃ£o foi encontrado pela placa: "
                                 + vehicle.plate()
                 ),
                 () -> assertTrue(
-                        vehiclesPage.containsVehicle(vehicle.model()),
-                        "O modelo do veículo não apareceu na tabela: "
+                        vehiclesPage.containsVehicle(
+                                vehicle.model()
+                        ),
+                        "O modelo nÃ£o apareceu na tabela: "
                                 + vehicle.model()
                 )
         );
 
         System.out.println(
-                "Veículo cadastrado e validado com sucesso: "
-                        + vehicle.plate()
-                        + " | "
-                        + vehicle.model()
+                "Mensagem validada: " + successMessage
         );
     }
 }

@@ -5,4 +5,5 @@ target/
 .project
 .classpath
 .idea/
-.vscode/
+.vscode/.allure/
+.allure/

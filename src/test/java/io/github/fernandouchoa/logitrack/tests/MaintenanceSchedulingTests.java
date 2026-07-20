@@ -13,6 +13,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import static io.github.fernandouchoa.logitrack.utils.MessageAssertions.assertContainsAll;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,7 +21,7 @@ class MaintenanceSchedulingTests extends BaseTest {
 
     @Test
     @Tag("e2e")
-    @DisplayName("Agendar manutenção e validar exibição na tabela")
+    @DisplayName("Agendar manutenÃ§Ã£o e validar mensagem e tabela")
     void shouldScheduleMaintenanceAndDisplayItInTable() {
         Assumptions.assumeTrue(
                 ConfigManager.hasCredentials(),
@@ -28,7 +29,6 @@ class MaintenanceSchedulingTests extends BaseTest {
         );
 
         VehicleData vehicle = TestDataFactory.validVehicle();
-
         MaintenanceData maintenance =
                 TestDataFactory.validMaintenance(
                         vehicle.plate()
@@ -45,73 +45,50 @@ class MaintenanceSchedulingTests extends BaseTest {
                 .sidebar()
                 .accessVehicles();
 
-        assertTrue(
-                vehiclesPage.isLoaded(),
-                "A página de veículos não foi carregada."
-        );
-
         vehiclesPage.createVehicle(vehicle);
 
-        page.waitForTimeout(1500);
-
-        assertTrue(
-                page.locator(
-                        "[role='dialog']:visible"
-                ).count() == 0,
-                "O formulário de veículo permaneceu aberto."
-        );
+        // Consome a mensagem do cadastro do veÃ­culo.
+        vehiclesPage.getFeedbackMessage();
 
         MaintenancePage maintenancePage =
                 dashboard.sidebar().accessMaintenance();
 
         page.waitForURL("**/manutencao");
-        page.waitForTimeout(800);
-
-        assertTrue(
-                maintenancePage.isLoaded(),
-                "A página de manutenção não foi carregada. URL atual: "
-                        + page.url()
-        );
 
         maintenancePage.schedule(maintenance);
 
-        page.waitForTimeout(1500);
-
-        assertTrue(
-                page.locator(
-                        "[role='dialog']:visible"
-                ).count() == 0,
-                "O formulário de manutenção permaneceu aberto."
-        );
+        String successMessage =
+                maintenancePage.getFeedbackMessage();
 
         maintenancePage.searchByVehicle(
                 vehicle.plate()
         );
-
         page.waitForTimeout(800);
 
         assertAll(
+                () -> assertContainsAll(
+                        successMessage,
+                        "manutencao",
+                        "sucesso"
+                ),
                 () -> assertTrue(
                         maintenancePage.containsMaintenance(
                                 vehicle.plate()
                         ),
-                        "A manutenção não foi encontrada pela placa: "
+                        "A manutenÃ§Ã£o nÃ£o foi encontrada pela placa: "
                                 + vehicle.plate()
                 ),
                 () -> assertTrue(
                         maintenancePage.containsMaintenance(
                                 maintenance.serviceType()
                         ),
-                        "O serviço não apareceu na tabela: "
+                        "O serviÃ§o nÃ£o apareceu na tabela: "
                                 + maintenance.serviceType()
                 )
         );
 
         System.out.println(
-                "Manutenção agendada e validada com sucesso: "
-                        + vehicle.plate()
-                        + " | "
-                        + maintenance.serviceType()
+                "Mensagem validada: " + successMessage
         );
     }
 }

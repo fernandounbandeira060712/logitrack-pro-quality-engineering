@@ -14,14 +14,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import static io.github.fernandouchoa.logitrack.utils.MessageAssertions.assertContainsAll;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InvalidMaintenanceDateTests extends BaseTest {
 
     @Test
     @Tag("business-rule")
-    @DisplayName("Impedir manutenção com data final anterior à inicial")
+    @DisplayName("Impedir manutenÃ§Ã£o com data final anterior Ã  inicial")
     void shouldNotAllowMaintenanceWithEndDateBeforeStartDate() {
         Assumptions.assumeTrue(
                 ConfigManager.hasCredentials(),
@@ -50,38 +51,31 @@ class InvalidMaintenanceDateTests extends BaseTest {
                 .sidebar()
                 .accessVehicles();
 
-        assertTrue(
-                vehiclesPage.isLoaded(),
-                "A página de veículos não foi carregada."
-        );
-
         vehiclesPage.createVehicle(vehicle);
-
-        page.waitForTimeout(1500);
+        vehiclesPage.getFeedbackMessage();
 
         MaintenancePage maintenancePage =
                 dashboard.sidebar().accessMaintenance();
 
         page.waitForURL("**/manutencao");
-        page.waitForTimeout(800);
-
-        assertTrue(
-                maintenancePage.isLoaded(),
-                "A página de manutenção não foi carregada. URL atual: "
-                        + page.url()
-        );
 
         maintenancePage
                 .clickNewMaintenance()
                 .fillMaintenanceForm(invalidMaintenance)
                 .save();
 
-        page.waitForTimeout(1500);
+        String validationMessage =
+                maintenancePage.getFeedbackMessage();
+
+        if (page.locator(
+                "[role='dialog']:visible"
+        ).count() > 0) {
+            maintenancePage.cancel();
+        }
 
         maintenancePage.searchByVehicle(
                 vehicle.plate()
         );
-
         page.waitForTimeout(800);
 
         boolean invalidMaintenanceWasCreated =
@@ -89,21 +83,23 @@ class InvalidMaintenanceDateTests extends BaseTest {
                         vehicle.plate()
                 );
 
-        System.out.println(
-                "Manutenção inválida encontrada na tabela: "
-                        + invalidMaintenanceWasCreated
+        assertAll(
+                () -> assertContainsAll(
+                        validationMessage,
+                        "data de finalizacao",
+                        "nao pode ser anterior",
+                        "data de inicio"
+                ),
+                () -> assertFalse(
+                        invalidMaintenanceWasCreated,
+                        "O sistema cadastrou a manutenÃ§Ã£o "
+                                + "com datas invÃ¡lidas."
+                )
         );
 
-        assertFalse(
-                invalidMaintenanceWasCreated,
-                "Defeito identificado: o sistema permitiu agendar "
-                        + "uma manutenção com data final anterior "
-                        + "à data inicial para o veículo "
-                        + vehicle.plate()
-        );
-
         System.out.println(
-                "Regra de datas da manutenção validada com sucesso."
+                "Mensagem validada: "
+                        + validationMessage
         );
     }
 }

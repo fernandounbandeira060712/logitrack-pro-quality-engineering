@@ -12,14 +12,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import static io.github.fernandouchoa.logitrack.utils.MessageAssertions.assertContainsAll;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DuplicateVehiclePlateTests extends BaseTest {
 
     @Test
     @Tag("business-rule")
-    @DisplayName("Impedir cadastro de veículos com a mesma placa")
+    @DisplayName("Impedir veículos com a mesma placa")
     void shouldNotAllowDuplicateVehiclePlate() {
         Assumptions.assumeTrue(
                 ConfigManager.hasCredentials(),
@@ -46,17 +47,26 @@ class DuplicateVehiclePlateTests extends BaseTest {
                 .sidebar()
                 .accessVehicles();
 
-        assertTrue(
-                vehiclesPage.isLoaded(),
-                "A página de veículos não foi carregada."
-        );
-
         vehiclesPage.createVehicle(original);
 
-        page.waitForTimeout(1500);
+        // Consome o toast do primeiro cadastro.
+        vehiclesPage.getFeedbackMessage();
+
+        vehiclesPage
+                .clickNewVehicle()
+                .fillVehicleForm(duplicate)
+                .save();
+
+        String validationMessage =
+                vehiclesPage.getFeedbackMessage();
+
+        if (page.locator(
+                "[role='dialog']:visible"
+        ).count() > 0) {
+            vehiclesPage.cancel();
+        }
 
         vehiclesPage.searchByPlate(original.plate());
-
         page.waitForTimeout(800);
 
         Locator rowsWithPlate = page.locator("tbody tr")
@@ -65,34 +75,26 @@ class DuplicateVehiclePlateTests extends BaseTest {
                                 .setHasText(original.plate())
                 );
 
-        assertEquals(
-                1,
-                rowsWithPlate.count(),
-                "O veículo original não foi encontrado de forma única."
+        assertAll(
+                () -> assertContainsAll(
+                        validationMessage,
+                        "veiculo",
+                        "with placa",
+                        original.plate(),
+                        "already exists"
+                ),
+                () -> assertEquals(
+                        1,
+                        rowsWithPlate.count(),
+                        "Defeito identificado: o sistema permitiu "
+                                + "mais de um veículo com a placa "
+                                + original.plate()
+                )
         );
-
-        vehiclesPage
-                .clickNewVehicle()
-                .fillVehicleForm(duplicate)
-                .save();
-
-        page.waitForTimeout(1500);
-
-        int duplicateCount = rowsWithPlate.count();
 
         System.out.println(
-                "Quantidade de veículos encontrados com a placa "
-                        + original.plate()
-                        + ": "
-                        + duplicateCount
-        );
-
-        assertEquals(
-                1,
-                duplicateCount,
-                "Defeito identificado: o sistema permitiu cadastrar "
-                        + "mais de um veículo com a mesma placa "
-                        + original.plate()
+                "Mensagem validada: "
+                        + validationMessage
         );
 
         System.out.println(

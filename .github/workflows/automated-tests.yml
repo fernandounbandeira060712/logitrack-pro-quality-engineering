@@ -1,15 +1,91 @@
-﻿name: Automated Tests
+name: Quality Engineering Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  tests:
+  automated-tests:
+    name: Playwright, JUnit and Allure
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      LOGITRACK_EMAIL: ${{ secrets.LOGITRACK_EMAIL }}
+      LOGITRACK_PASSWORD: ${{ secrets.LOGITRACK_PASSWORD }}
+      LOGITRACK_HEADLESS: "true"
+      LOGITRACK_BROWSER: chromium
+      LOGITRACK_TIMEOUT: "45000"
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          if [ -z "$LOGITRACK_EMAIL" ] || [ -z "$LOGITRACK_PASSWORD" ]; then
+            echo "::error::Configure LOGITRACK_EMAIL and LOGITRACK_PASSWORD in GitHub Actions secrets."
+            exit 1
+          fi
+
+      - name: Install Playwright Chromium
+        run: >
+          mvn -B -ntp exec:java
+          -Dexec.mainClass=com.microsoft.playwright.CLI
+          -Dexec.args="install --with-deps chromium"
+
+      - name: Run automated tests once
+        run: mvn -B -ntp clean test
+
+      - name: Generate Allure report
+        if: always()
+        run: mvn -B -ntp allure:report
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: target/allure-results
+          if-no-files-found: warn
+          retention-days: 15
+
+      - name: Upload Allure HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-html-report
+          path: target/site/allure-maven
+          if-no-files-found: warn
+          retention-days: 15
+
+      - name: Upload Playwright evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-evidence
+          path: |
+            target/screenshots
+            target/videos
+            target/traces
+            target/logs
+            target/surefire-reports
+          if-no-files-found: warn
+          retention-days: 15

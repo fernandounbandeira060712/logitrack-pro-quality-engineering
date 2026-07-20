@@ -13,6 +13,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import static io.github.fernandouchoa.logitrack.utils.MessageAssertions.assertContainsAll;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,7 +21,7 @@ class TripRegistrationTests extends BaseTest {
 
     @Test
     @Tag("e2e")
-    @DisplayName("Cadastrar viagem e validar exibição na tabela")
+    @DisplayName("Cadastrar viagem e validar mensagem e tabela")
     void shouldRegisterTripAndDisplayItInTable() {
         Assumptions.assumeTrue(
                 ConfigManager.hasCredentials(),
@@ -43,81 +44,56 @@ class TripRegistrationTests extends BaseTest {
                 .sidebar()
                 .accessVehicles();
 
-        assertTrue(
-                vehiclesPage.isLoaded(),
-                "A página de veículos não foi carregada."
-        );
-
         vehiclesPage.createVehicle(vehicle);
 
-        page.waitForTimeout(1500);
-
-        assertTrue(
-                page.locator(
-                        "[role='dialog']:visible"
-                ).count() == 0,
-                "O formulário de veículo permaneceu aberto."
-        );
+        // Consome a mensagem do cadastro do veÃ­culo.
+        vehiclesPage.getFeedbackMessage();
 
         TripsPage tripsPage = dashboard
                 .sidebar()
                 .accessTrips();
 
         page.waitForURL("**/viagens");
-        page.waitForTimeout(800);
-
-        assertTrue(
-                tripsPage.isLoaded(),
-                "A página de viagens não foi carregada. URL atual: "
-                        + page.url()
-        );
 
         tripsPage.createTrip(trip);
 
-        page.waitForTimeout(1500);
-
-        assertTrue(
-                page.locator(
-                        "[role='dialog']:visible"
-                ).count() == 0,
-                "O formulário de viagem permaneceu aberto."
-        );
+        String successMessage =
+                tripsPage.getFeedbackMessage();
 
         tripsPage.search(trip.origin());
-
         page.waitForTimeout(800);
 
         assertAll(
+                () -> assertContainsAll(
+                        successMessage,
+                        "viagem",
+                        "sucesso"
+                ),
                 () -> assertTrue(
                         tripsPage.containsTrip(
                                 vehicle.plate()
                         ),
-                        "A viagem não foi encontrada pela placa: "
+                        "A viagem nÃ£o foi encontrada pela placa: "
                                 + vehicle.plate()
                 ),
                 () -> assertTrue(
                         tripsPage.containsTrip(
                                 trip.origin()
                         ),
-                        "A origem não apareceu na tabela: "
+                        "A origem nÃ£o apareceu na tabela: "
                                 + trip.origin()
                 ),
                 () -> assertTrue(
                         tripsPage.containsTrip(
                                 trip.destination()
                         ),
-                        "O destino não apareceu na tabela: "
+                        "O destino nÃ£o apareceu na tabela: "
                                 + trip.destination()
                 )
         );
 
         System.out.println(
-                "Viagem cadastrada e validada com sucesso: "
-                        + vehicle.plate()
-                        + " | "
-                        + trip.origin()
-                        + " -> "
-                        + trip.destination()
+                "Mensagem validada: " + successMessage
         );
     }
 }

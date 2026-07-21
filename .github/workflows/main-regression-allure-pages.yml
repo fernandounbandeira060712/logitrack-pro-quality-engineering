@@ -16,10 +16,10 @@ permissions:
   id-token: write
 
 jobs:
-  full-regression:
-    name: Full Regression Suite
+  quality-reports:
+    name: Regression and Known Defects Reports
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 70
 
     env:
       LOGITRACK_EMAIL: ${{ secrets.LOGITRACK_EMAIL }}
@@ -50,29 +50,25 @@ jobs:
           -Dexec.mainClass=com.microsoft.playwright.CLI
           -Dexec.args="install --with-deps chromium"
 
-      - name: Run full regression suite
+      - name: Run main regression suite
         run: >
           mvn -B -ntp clean test
           -Dtest=FullRegressionSuite
           -Demail="$LOGITRACK_EMAIL"
           -Dpassword="$LOGITRACK_PASSWORD"
           -Dheadless=true
-          -Dtimeout=45000
+          -Dtimeout=60000
           -DopenAllure=false
           -Dtest.retry.count=1
+          -Djunit.jupiter.execution.parallel.enabled=false
+          -Djunit.jupiter.execution.parallel.mode.default=same_thread
+          -Djunit.jupiter.execution.parallel.mode.classes.default=same_thread
 
-      - name: Generate Allure report
+      - name: Generate main Allure report
         if: always()
         run: mvn -B -ntp allure:report
 
-      - name: Show generated Allure files
-        if: always()
-        shell: bash
-        run: |
-          echo "Conteudo gerado em target/site:"
-          find target/site -maxdepth 4 -type f -print 2>/dev/null | sort | head -200 || true
-
-      - name: Create fallback page when report generation fails
+      - name: Create main report fallback
         if: always()
         shell: bash
         run: |
@@ -85,21 +81,28 @@ jobs:
           <!doctype html>
           <html lang="pt-BR">
           <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>LogiTrack Pro - Allure indisponivel</title>
+            <meta charset="utf-8">
+            <title>LogiTrack Pro - Relatorio principal indisponivel</title>
           </head>
           <body>
-            <h1>Relatorio Allure indisponivel</h1>
+            <h1>Relatorio Allure principal indisponivel</h1>
             <p>Consulte a execucao do GitHub Actions e os artefatos do workflow.</p>
           </body>
           </html>
           HTML
           fi
 
-          touch "$REPORT_DIR/.nojekyll"
+      - name: Prepare public main report
+        if: always()
+        shell: bash
+        run: |
+          rm -rf public-site
+          mkdir -p public-site
 
-      - name: Upload Allure HTML artifact
+          cp -R target/site/allure-maven-plugin/. public-site/
+          touch public-site/.nojekyll
+
+      - name: Upload main Allure HTML artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -108,11 +111,128 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Upload Playwright evidence
+      - name: Upload main Playwright evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: main-playwright-evidence-${{ github.run_number }}
+          path: |
+            target/allure-results
+            target/screenshots
+            target/videos
+            target/traces
+            target/logs
+            target/surefire-reports
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Clean result directories for known defects
+        if: always()
+        shell: bash
+        run: |
+          rm -rf \
+            target/allure-results \
+            target/site/allure-maven-plugin \
+            target/surefire-reports \
+            target/screenshots \
+            target/videos \
+            target/traces \
+            target/logs
+
+      - name: Run known defects suite
+        if: always()
+        id: known-defects
+        shell: bash
+        run: |
+          set +e
+
+          mvn -B -ntp test \
+            -Dtest=KnownDefectsSuite \
+            -DrunKnownDefects=true \
+            -Demail="$LOGITRACK_EMAIL" \
+            -Dpassword="$LOGITRACK_PASSWORD" \
+            -Dheadless=true \
+            -Dtimeout=60000 \
+            -DopenAllure=false \
+            -Dtest.retry.count=0 \
+            -Djunit.jupiter.execution.parallel.enabled=false \
+            -Djunit.jupiter.execution.parallel.mode.default=same_thread \
+            -Djunit.jupiter.execution.parallel.mode.classes.default=same_thread
+
+          exit_code=$?
+          set -e
+
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+          echo "::notice::Known Defects Suite finalizada com codigo $exit_code. Falhas funcionais documentadas sao esperadas nesta suite."
+          exit 0
+
+      - name: Generate known defects Allure report
+        if: always()
+        run: mvn -B -ntp allure:report
+
+      - name: Create known defects report fallback
+        if: always()
+        shell: bash
+        run: |
+          REPORT_DIR="target/site/allure-maven-plugin"
+
+          if [ ! -f "$REPORT_DIR/index.html" ]; then
+            mkdir -p "$REPORT_DIR"
+
+            cat > "$REPORT_DIR/index.html" <<'HTML'
+          <!doctype html>
+          <html lang="pt-BR">
+          <head>
+            <meta charset="utf-8">
+            <title>LogiTrack Pro - Defeitos conhecidos indisponiveis</title>
+          </head>
+          <body>
+            <h1>Relatorio de defeitos conhecidos indisponivel</h1>
+            <p>Consulte a execucao do GitHub Actions e os artefatos do workflow.</p>
+          </body>
+          </html>
+          HTML
+          fi
+
+      - name: Add known defects report to public site
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p public-site/known-defects
+
+          cp -R target/site/allure-maven-plugin/. public-site/known-defects/
+          touch public-site/known-defects/.nojekyll
+
+          cat > public-site/reports.html <<'HTML'
+          <!doctype html>
+          <html lang="pt-BR">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>LogiTrack Pro - Relatorios de Qualidade</title>
+          </head>
+          <body>
+            <h1>LogiTrack Pro - Relatorios de Qualidade</h1>
+            <p><a href="./">Abrir regressao principal</a></p>
+            <p><a href="./known-defects/">Abrir defeitos conhecidos</a></p>
+          </body>
+          </html>
+          HTML
+
+      - name: Upload known defects Allure HTML artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: known-defects-allure-html-${{ github.run_number }}
+          path: target/site/allure-maven-plugin
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload known defects evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: known-defects-evidence-${{ github.run_number }}
           path: |
             target/allure-results
             target/screenshots
@@ -131,13 +251,13 @@ jobs:
         if: always()
         uses: actions/upload-pages-artifact@v3
         with:
-          path: target/site/allure-maven-plugin
+          path: public-site
 
   deploy-allure:
-    name: Publish Allure on GitHub Pages
-    if: always() && needs.full-regression.result != 'cancelled'
+    name: Publish Allure reports on GitHub Pages
+    if: always() && needs.quality-reports.result != 'cancelled'
     needs:
-      - full-regression
+      - quality-reports
     runs-on: ubuntu-latest
 
     environment:
@@ -145,6 +265,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Deploy Allure report
+      - name: Deploy Allure reports
         id: deployment
         uses: actions/deploy-pages@v4

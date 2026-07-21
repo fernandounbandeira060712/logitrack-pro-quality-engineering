@@ -14,8 +14,8 @@ Entretanto, foram confirmados três defeitos relevantes no módulo de viagens, r
 |---|---|
 | Cenários automatizados no conjunto total | 22 |
 | Regressão principal | 19 |
-| Cenários aprovados na regressão | 18 |
-| Cenários ignorados/condicionais | 1 |
+| Cenários aprovados na regressão | 19 |
+| Cenários ignorados/condicionais | 0 |
 | Quality Gate de desenvolvimento | 9 aprovados |
 | Defeitos conhecidos automatizados | 3 |
 | Defeitos funcionais confirmados | 3 |

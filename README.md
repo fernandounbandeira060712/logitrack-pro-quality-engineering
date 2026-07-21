@@ -834,3 +834,57 @@ QA Engineer com foco em automação de testes, Engenharia de Qualidade, Java, Pl
 ### É criar confiança para que o produto possa evoluir com segurança.
 
 </div>
+
+<!-- DEMO-E2E:START -->
+## 🎬 Execução demonstrativa com navegador visível
+
+Para acompanhar visualmente o fluxo automatizado completo, execute o cenário E2E pelo PowerShell. O navegador será aberto, as ações serão executadas em velocidade reduzida e o Allure local será aberto automaticamente ao final.
+
+> **Importante:** copie somente os comandos dentro do bloco. Não utilize `-Headless` nem `-NoOpen` nesta demonstração.
+
+```powershell
+$env:LOGITRACK_SLOW_MO = "350"
+
+powershell -ExecutionPolicy Bypass `
+  -File .\executar-testes-com-allure.ps1 `
+  -Email "SEU_EMAIL" `
+  -Password "SUA_SENHA" `
+  -Test "FleetManagementE2ETests" `
+  -RetryCount 0
+```
+
+Durante a execução será possível acompanhar:
+
+1. autenticação;
+2. cadastro de veículo;
+3. agendamento de manutenção;
+4. cadastro de viagem;
+5. validação dos registros nas tabelas.
+
+Ao término, o executor disponibiliza:
+
+- screenshot final;
+- vídeo WebM;
+- Playwright Trace;
+- logs da execução;
+- página final;
+- relatório Allure local.
+
+### Demonstração animada
+
+![Execução E2E do LogiTrack Pro](docs/images/logitrack-e2e-demo.gif)
+
+### Vídeo completo
+
+[▶️ Assistir à execução E2E em melhor qualidade](docs/media/logitrack-e2e-demo.webm)
+
+### Relatório Allure público
+
+[🔗 Acessar o Allure Report publicado no GitHub Pages](https://fernandounbandeira060712.github.io/logitrack-pro-quality-engineering/)
+
+Após a demonstração, remova o atraso temporário:
+
+```powershell
+Remove-Item Env:LOGITRACK_SLOW_MO -ErrorAction SilentlyContinue
+```
+<!-- DEMO-E2E:END -->

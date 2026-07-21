@@ -118,8 +118,8 @@
 **Pré-condições:** usuário autenticado.<br>
 **Passos:** selecionar a opção Veículos.<br>
 **Resultado esperado:** tela de veículos carregada.<br>
-**Resultado atual:** cenário mantido como condicional/ignorado na regressão atual.<br>
-**Status:** Ignorado.
+**Resultado atual:** comportamento conforme esperado.<br>
+**Status:** Aprovado.
 
 ## DISCOVERY-001 — Mapear links da área autenticada
 

@@ -387,70 +387,57 @@ Essa separação permite:
 
 # 📊 Evidências e Allure
 
-## Relatório público
+## Relatórios públicos segregados
 
-<div align="center">
+A estratégia de publicação separa os resultados que representam a saúde atual da aplicação dos cenários que reproduzem defeitos já conhecidos.
 
-### 🔗 [Abrir o Allure Report](https://fernandounbandeira060712.github.io/logitrack-pro-quality-engineering/)
+| Relatório | Suíte | Resultado da execução registrada | Função no processo |
+|---|---|---:|---|
+| [Regressão principal](https://fernandounbandeira060712.github.io/logitrack-pro-quality-engineering/) | `FullRegressionSuite` | **19 aprovados — 100%** | Atua como Quality Gate e deve permanecer verde |
+| [Defeitos conhecidos](https://fernandounbandeira060712.github.io/logitrack-pro-quality-engineering/known-defects/) | `KnownDefectsSuite` | **3 cenários reproduzidos — 0%** | Mantém os bugs reproduzíveis sem bloquear a entrega |
 
-</div>
+### Por que os relatórios são separados?
 
-O relatório é gerado pela regressão da branch `main` e publicado automaticamente no GitHub Pages.
+- **Sinal confiável:** a regressão principal mostra somente a qualidade dos fluxos que precisam estar funcionando.
+- **Rastreabilidade:** os defeitos confirmados continuam automatizados, documentados e acompanhados por evidências.
+- **Entrega segura:** falhas antigas e já conhecidas não escondem uma nova regressão nem bloqueiam alterações sem relação com elas.
+- **Detecção de correção:** quando um bug for resolvido, o cenário correspondente mudará de status e indicará que a Issue pode ser reavaliada.
+- **Leitura executiva:** recrutadores, QAs, desenvolvedores e gestores conseguem distinguir rapidamente regressão de produto e dívida de qualidade conhecida.
 
+### Regressão principal — 19 cenários aprovados
 
-### Visão geral do relatório público
+![Allure da regressão principal com 19 testes aprovados](docs/images/allure-main-regression-19-passed.png)
 
-![Visão geral do Allure público](docs/images/allure-public-overview.png)
+A página principal apresenta a suíte funcional utilizada como Quality Gate. Nesta execução, os **19 casos foram aprovados**, sem falhas, erros ou cenários ignorados.
 
-A visão executiva apresenta o total de casos, a taxa de aprovação, as suítes executadas e o ambiente utilizado.
+### Defeitos conhecidos — execução isolada
 
-### Cenário E2E e anexos técnicos
+![Allure separado com os defeitos conhecidos](docs/images/allure-known-defects-separated-report.png)
 
-![Cenário E2E com evidências públicas](docs/images/allure-e2e-attachments.png)
+O relatório isolado mantém três comportamentos problemáticos sob observação. Na execução registrada:
 
-O cenário integrado disponibiliza screenshot, página final, Playwright Trace, logs e vídeo da execução.
+- **2 cenários vermelhos:** falhas funcionais classificadas como defeitos do produto;
+- **1 cenário amarelo:** ocorrência classificada como defeito de teste ou problema técnico;
+- **0% de aprovação:** resultado esperado enquanto os comportamentos documentados permanecerem sem correção.
 
-### Evidência funcional final
-
-![Evidência final do cenário E2E](docs/images/allure-e2e-final-evidence.png)
-
-A evidência comprova o resultado funcional obtido na aplicação após a conclusão do fluxo de gerenciamento da frota.
-
-### Vídeo da execução
-
-![Vídeo da execução disponível no Allure](docs/images/allure-e2e-video.png)
-
-O vídeo permite revisar toda a interação automatizada diretamente pelo relatório público.
-
-### Gráficos e leitura executiva
-
-![Gráficos de status, severidade e duração](docs/images/allure-graphs-overview.png)
-
-A visão gráfica consolida status, severidade e duração dos cenários, facilitando a análise técnica e executiva.
-
+> Um relatório vermelho de defeitos conhecidos não significa que o Quality Gate principal falhou. Ele comprova que os bugs continuam reproduzíveis e visíveis.
 
 ### Como consultar as evidências públicas
 
-No relatório público, siga este caminho:
+No relatório desejado, siga este caminho:
 
 ```text
-Suítes
-→ selecione a classe de teste
-→ selecione o cenário
-→ Corpo de teste
+Suítes → selecione a classe de teste → selecione o cenário → Corpo de teste
 ```
 
-Em cada cenário ficam disponíveis, conforme a execução:
+Cada cenário pode disponibilizar:
 
-- **Evidência final:** screenshot do estado final da aplicação;
-- **Página final:** URL e título registrados no encerramento;
-- **Playwright Trace:** arquivo para análise detalhada da execução;
-- **Logs da execução:** eventos técnicos coletados durante o teste;
-- **Vídeo da execução:** gravação integral do cenário.
-
-Para baixar um anexo, use o ícone de download apresentado à direita do item. O Playwright Trace pode ser aberto no **Playwright Trace Viewer** após o download.
-
-
+- screenshot final;
+- vídeo WebM;
+- Playwright Trace;
+- logs;
+- URL e título da página;
+- resultado Maven/JUnit.
 ## Evidências coletadas
 
 Cada execução automatizada pode disponibilizar:
@@ -493,46 +480,59 @@ target/surefire-reports
 
 ## Pipeline em execução
 
-A regressão principal executa a suíte completa, gera o relatório Allure, publica os artefatos técnicos e realiza o deploy no GitHub Pages.
-
-### Resumo da execução
-
-![Resumo da pipeline Main Regression and Allure Pages](docs/images/main-regression-summary.png)
-
-### Etapas da regressão e geração das evidências
-
-![Etapas da regressão completa e geração do Allure](docs/images/main-regression-execution-steps.png)
-
-### Publicação do Allure no GitHub Pages
-
-![Deploy do Allure no GitHub Pages](docs/images/github-pages-allure-deployment.png)
-
-
-### Pull Request protegido por Quality Gate
-
-![Pull Request aprovado pelo DEV Quality Gate](docs/images/pull-request-quality-gate-approved.png)
-
-Antes da integração com a branch `main`, o Pull Request passa pelas validações automáticas da suíte DEV. A imagem comprova:
-
-- execução aprovada no evento de `push`;
-- execução aprovada no evento de `pull_request`;
-- ausência de conflitos com a branch base;
-- possibilidade de merge somente após os checks obrigatórios.
-
-Esse fluxo reduz o risco de regressões e demonstra uma prática de entrega contínua baseada em evidências.
-
-As imagens demonstram a execução aprovada dos dois jobs:
+O workflow da branch `main` produz os dois relatórios em uma única execução controlada:
 
 ```text
-Full Regression Suite
-Publish Allure on GitHub Pages
+FullRegressionSuite
+        ↓
+Allure principal
+        ↓
+public-site/
+
+KnownDefectsSuite
+        ↓
+Allure de defeitos conhecidos
+        ↓
+public-site/known-defects/
+
+public-site
+        ↓
+GitHub Pages
 ```
 
-O relatório publicado pode ser acessado por qualquer avaliador, sem necessidade de executar o projeto localmente:
+A execução da suíte de defeitos conhecidos captura o resultado para gerar o relatório, mas não transforma uma falha funcional já documentada em falha do Quality Gate principal.
 
-**[Abrir o Allure público](https://fernandounbandeira060712.github.io/logitrack-pro-quality-engineering/)**
+### Regressão e defeitos conhecidos no mesmo workflow
 
+![Pipeline com regressão e defeitos conhecidos](docs/images/github-actions-dual-allure-pipeline.png)
 
+A evidência acima demonstra:
+
+- regressão principal concluída;
+- relatório principal gerado;
+- resultados anteriores limpos antes da segunda suíte;
+- defeitos conhecidos executados separadamente;
+- segundo Allure gerado e incluído em `/known-defects/`;
+- artefatos e evidências preservados por objetivo.
+
+### Publicação dos dois relatórios no GitHub Pages
+
+![Deploy dos dois relatórios Allure no GitHub Pages](docs/images/github-pages-dual-allure-deployment.png)
+
+O job de deploy publica um único artefato `public-site`, contendo:
+
+```text
+/
+├── index.html
+├── reports.html
+└── known-defects/
+    └── index.html
+```
+
+Links públicos:
+
+- [Regressão principal](https://fernandounbandeira060712.github.io/logitrack-pro-quality-engineering/)
+- [Defeitos conhecidos](https://fernandounbandeira060712.github.io/logitrack-pro-quality-engineering/known-defects/)
 ## Fluxo de desenvolvimento
 
 ```mermaid

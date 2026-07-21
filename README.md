@@ -29,12 +29,31 @@
 **Screenshot • Vídeo • Playwright Trace • Logs • URL final • Resultado das suítes**
 
 </div>
+<!-- E2E-DEMO-TOP:START -->
+<div align="center">
+  <h2>&#127916; Demonstra&ccedil;&atilde;o E2E</h2>
 
-## 🎬 Execução demonstrativa com navegador visível
+  <p>
+    <strong>Execu&ccedil;&atilde;o automatizada real do fluxo completo do LogiTrack Pro.</strong>
+  </p>
 
-Para acompanhar visualmente o fluxo automatizado completo, execute o cenário E2E pelo PowerShell. O navegador será aberto, as ações serão executadas em velocidade reduzida e o Allure local será aberto automaticamente ao final.
+  <a href="docs/media/logitrack-e2e-demo.webm">
+    <img
+      src="docs/images/logitrack-e2e-demo.gif"
+      alt="Execucao E2E do LogiTrack Pro"
+      width="100%"
+    >
+  </a>
 
-> **Importante:** copie somente os comandos dentro do bloco. Não utilize `-Headless` nem `-NoOpen` nesta demonstração.
+  <p>
+    <a href="docs/media/logitrack-e2e-demo.webm">
+      &#9654; Assistir ao v&iacute;deo completo em melhor qualidade
+    </a>
+  </p>
+</div>
+
+<details>
+<summary><strong>Como executar a demonstra&ccedil;&atilde;o localmente</strong></summary>
 
 ```powershell
 $env:LOGITRACK_SLOW_MO = "350"
@@ -45,48 +64,12 @@ powershell -ExecutionPolicy Bypass `
   -Password "SUA_SENHA" `
   -Test "FleetManagementE2ETests" `
   -RetryCount 0
-```
 
-Durante a execução será possível acompanhar:
-
-1. autenticação;
-2. cadastro de veículo;
-3. agendamento de manutenção;
-4. cadastro de viagem;
-5. validação dos registros nas tabelas.
-
-Ao término, o executor disponibiliza:
-
-- screenshot final;
-- vídeo WebM;
-- Playwright Trace;
-- logs da execução;
-- página final;
-- relatório Allure local.
-
-### Demonstração animada
-
-<div align="center">
-  <img src="docs/images/logitrack-e2e-demo.gif" alt="Execucao E2E do LogiTrack Pro" width="100%">
-</div>
-
-### Vídeo completo
-
-<div align="center">
-  <a href="docs/media/logitrack-e2e-demo.webm">Assistir a execucao E2E em melhor qualidade</a>
-</div>
-
-### Relatório Allure público
-
-[🔗 Acessar o Allure Report publicado no GitHub Pages](https://fernandounbandeira060712.github.io/logitrack-pro-quality-engineering/)
-
-Após a demonstração, remova o atraso temporário:
-
-```powershell
 Remove-Item Env:LOGITRACK_SLOW_MO -ErrorAction SilentlyContinue
 ```
-<!-- DEMO-E2E:END -->
 
+</details>
+<!-- E2E-DEMO-TOP:END -->
 ---
 
 ## 📚 Índice

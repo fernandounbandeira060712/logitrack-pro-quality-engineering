@@ -1,97 +1,109 @@
-# AnÃ¡lise de ExperiÃªncia do UsuÃ¡rio â€” LogiTrack Pro
+# Análise de Experiência do Usuário — LogiTrack Pro
 
-## UX-001 â€” Mensagem de placa duplicada mistura idiomas
+## Resumo
 
-**Funcionalidade ou tela:** Cadastro de veÃ­culos.
-
-**SituaÃ§Ã£o identificada:** Ao tentar cadastrar uma placa jÃ¡ existente, a aplicaÃ§Ã£o apresenta:
-
-`Veiculo with placa '<PLACA>' already exists`
-
-A mensagem mistura portuguÃªs e inglÃªs.
-
-**AlteraÃ§Ã£o recomendada:** Padronizar a mensagem:
-
-`JÃ¡ existe um veÃ­culo cadastrado com esta placa.`
-
-**Justificativa:** Mensagens no idioma da interface reduzem dÃºvida e tornam a experiÃªncia consistente.
-
-**BenefÃ­cio esperado:** Maior clareza, confianÃ§a e facilidade para usuÃ¡rios nÃ£o tÃ©cnicos.
+Foram registradas quatro oportunidades de melhoria. Elas não substituem defeitos funcionais, mas impactam clareza, consistência, acessibilidade e confiança do usuário.
 
 ---
 
-## UX-002 â€” ValidaÃ§Ã£o da data da viagem nÃ£o impede dado invÃ¡lido
+## UX-001 — Padronizar mensagem de placa duplicada para português
 
-**Funcionalidade ou tela:** Cadastro de viagens.
+**Módulo:** Veículos.<br>
+**Situação:** ao repetir uma placa, a aplicação apresenta mensagem misturando português e inglês.<br>
+**Exemplo atual:** `Veiculo with placa '<PLACA>' already exists`.<br>
+**Recomendação:** utilizar mensagem integralmente em português, como:
 
-**SituaÃ§Ã£o identificada:** A aplicaÃ§Ã£o permite data de chegada anterior Ã  data de saÃ­da.
+```text
+Já existe um veículo cadastrado com a placa informada.
+```
 
-**AlteraÃ§Ã£o recomendada:**
+**Benefícios:**
 
-- restringir o calendÃ¡rio;
-- realizar validaÃ§Ã£o no frontend e backend;
-- apresentar mensagem prÃ³xima aos campos;
-- manter os dados preenchidos para correÃ§Ã£o.
+- consistência de idioma;
+- melhor compreensão;
+- redução de dúvida;
+- aparência mais profissional.
 
-**Justificativa:** O usuÃ¡rio precisa identificar o erro antes de concluir uma operaÃ§Ã£o operacionalmente impossÃ­vel.
-
-**BenefÃ­cio esperado:** ReduÃ§Ã£o de retrabalho, inconsistÃªncias e erros em relatÃ³rios.
-
----
-
-## UX-003 â€” Campos obrigatÃ³rios nÃ£o sÃ£o identificados visualmente
-
-**Funcionalidade ou tela:** FormulÃ¡rios de veÃ­culo, manutenÃ§Ã£o e viagem.
-
-**SituaÃ§Ã£o identificada:** Os campos nÃ£o apresentam indicaÃ§Ã£o visual clara de obrigatoriedade, como asterisco ou texto de apoio.
-
-**AlteraÃ§Ã£o recomendada:**
-
-- adicionar `*` nos campos obrigatÃ³rios;
-- incluir texto `Campos obrigatÃ³rios`;
-- apresentar validaÃ§Ã£o inline;
-- associar mensagens aos campos para leitores de tela.
-
-**Justificativa:** O usuÃ¡rio deve saber antecipadamente quais dados sÃ£o necessÃ¡rios.
-
-**BenefÃ­cio esperado:** Menos tentativas de submissÃ£o invÃ¡lida e maior previsibilidade.
+**Prioridade sugerida:** Média.<br>
+**Issue:** https://github.com/fernandounbandeira060712/logitrack-pro-quality-engineering/issues/2
 
 ---
 
-## UX-004 â€” AÃ§Ãµes representadas apenas por Ã­cones
+## UX-002 — Identificar visualmente os campos obrigatórios
 
-**Funcionalidade ou tela:** Tabelas de veÃ­culos, manutenÃ§Ãµes e viagens.
+**Módulos:** Veículos, Manutenções e Viagens.<br>
+**Situação:** os formulários não deixam claro quais campos são obrigatórios.<br>
+**Recomendação:**
 
-**SituaÃ§Ã£o identificada:** Editar e excluir sÃ£o apresentados principalmente por Ã­cones.
+- incluir asterisco nos rótulos;
+- apresentar texto explicativo;
+- utilizar `required` e `aria-required="true"`;
+- associar mensagens ao campo correspondente.
 
-**AlteraÃ§Ã£o recomendada:**
+**Benefícios:**
+
+- maior previsibilidade;
+- menos submissões inválidas;
+- melhor acessibilidade;
+- menor tempo de preenchimento.
+
+**Prioridade sugerida:** Média.<br>
+**Issue:** https://github.com/fernandounbandeira060712/logitrack-pro-quality-engineering/issues/3
+
+---
+
+## UX-003 — Melhorar a identificação das ações por ícones
+
+**Módulos:** Veículos, Manutenções e Viagens.<br>
+**Situação:** ações como editar e excluir são exibidas apenas por ícones.<br>
+**Recomendação:**
 
 - adicionar tooltip;
-- garantir nome acessÃ­vel;
-- diferenciar visualmente aÃ§Ãµes destrutivas;
-- solicitar confirmaÃ§Ã£o antes da exclusÃ£o.
+- incluir `aria-label`;
+- garantir foco visível;
+- utilizar confirmação clara para exclusão;
+- considerar texto visível em contextos críticos.
 
-**Justificativa:** Ãcones isolados podem nÃ£o ser compreendidos por todos os usuÃ¡rios.
+**Benefícios:**
 
-**BenefÃ­cio esperado:** ReduÃ§Ã£o de aÃ§Ãµes acidentais e melhoria da acessibilidade.
+- melhor descoberta das ações;
+- redução de erro;
+- suporte a leitores de tela;
+- maior segurança em operações destrutivas.
+
+**Prioridade sugerida:** Média.<br>
+**Issue:** https://github.com/fernandounbandeira060712/logitrack-pro-quality-engineering/issues/4
 
 ---
 
-## UX-005 â€” Feedback de sucesso deve ser consistente
+## UX-004 — Padronizar mensagens de validação para português
 
-**Funcionalidade ou tela:** Cadastros em geral.
+**Módulos:** formulários e regras de negócio.<br>
+**Situação:** validações podem apresentar mensagens genéricas em inglês, como `Validation failed`.<br>
+**Recomendação:** utilizar mensagens específicas e contextualizadas, por exemplo:
 
-**SituaÃ§Ã£o identificada:** Os fluxos utilizam mensagens diferentes e com padrÃµes de escrita nÃ£o totalmente uniformes.
+```text
+O custo estimado não pode ser negativo.
+```
 
-**AlteraÃ§Ã£o recomendada:** Definir um padrÃ£o de conteÃºdo:
+**Benefícios:**
 
-- entidade;
-- aÃ§Ã£o realizada;
-- resultado;
-- idioma;
-- pontuaÃ§Ã£o;
-- duraÃ§Ã£o suficiente para leitura.
+- orientação clara para correção;
+- consistência de idioma;
+- redução de retrabalho;
+- melhor percepção de qualidade.
 
-**Justificativa:** Feedback consistente melhora a compreensÃ£o do resultado da aÃ§Ã£o.
+**Prioridade sugerida:** Média/Alta.<br>
+**Issue:** https://github.com/fernandounbandeira060712/logitrack-pro-quality-engineering/issues/5
 
-**BenefÃ­cio esperado:** Maior confianÃ§a e menor necessidade de verificar manualmente a tabela.
+---
+
+## Diretrizes gerais
+
+- padronizar tom e idioma;
+- apresentar feedback próximo ao campo;
+- diferenciar erro, alerta e sucesso;
+- manter mensagens objetivas;
+- evitar mensagens técnicas para o usuário final;
+- garantir leitura por tecnologias assistivas;
+- manter consistência entre módulos.
